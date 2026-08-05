@@ -47,68 +47,72 @@ export function ImportPanel({ onMemoriesLoaded, onExplore, onShowGuide }: Props)
   }
 
   return (
-    <div className="space-y-8 max-w-2xl">
-      <h2 className="text-2xl font-semibold text-white">Import Your Archive</h2>
+    <div className="space-y-6 max-w-lg">
+      <div>
+        <h2 className="text-xl font-semibold tracking-tight text-zinc-50">Import</h2>
+        <p className="mt-1 text-sm text-zinc-500">
+          Facebook JSON archive. All processing stays on your device.
+        </p>
+      </div>
 
-      <div className="bg-slate-800/40 border border-slate-700 rounded-2xl p-8 text-center space-y-6">
-        <div className="w-16 h-16 mx-auto rounded-2xl bg-gradient-to-br from-cyan-500/20 to-indigo-500/20 flex items-center justify-center">
-          <Upload className="w-8 h-8 text-cyan-400" />
+      <div className="rounded-xl border border-white/[0.06] bg-zinc-900/40 p-6 text-center space-y-5">
+        <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-xl bg-cyan-500/10 border border-cyan-500/15">
+          <Upload className="w-5 h-5 text-cyan-400" />
         </div>
         <div>
-          <h3 className="text-lg font-medium text-white mb-2">Facebook Data Download</h3>
-          <p className="text-slate-400 text-sm leading-relaxed">
-            Request your archive from Meta in <strong className="text-amber-300">JSON</strong> format,
-            then drop the ZIP here. All processing stays on your device.
+          <h3 className="text-sm font-medium text-zinc-100">Facebook data download</h3>
+          <p className="mt-1.5 text-xs text-zinc-500 leading-relaxed max-w-xs mx-auto">
+            Request your archive from Meta in <strong className="text-amber-300/90">JSON</strong>{' '}
+            format, then select the ZIP here.
           </p>
         </div>
 
-        <label className="inline-flex items-center gap-2 px-6 py-3 rounded-xl bg-cyan-600 hover:bg-cyan-500 text-white font-medium cursor-pointer transition-colors">
+        <label className="inline-flex items-center gap-2 rounded-lg bg-cyan-600 hover:bg-cyan-500 px-5 py-2.5 text-sm font-medium text-white cursor-pointer transition-colors">
           <Upload className="w-4 h-4" />
-          Select Facebook ZIP
+          Select ZIP
           <input type="file" accept=".zip,application/zip" className="hidden" onChange={handleFile} />
         </label>
 
-        <div className="pt-4 border-t border-slate-700 space-y-3">
-          <p className="text-slate-500 text-sm">Demo data is available if you want to explore first</p>
-          <div className="flex flex-wrap justify-center gap-3">
+        <div className="pt-4 border-t border-white/[0.05] space-y-2.5">
+          <p className="text-[11px] text-zinc-600">Or explore with demo data first</p>
+          <div className="flex flex-wrap justify-center gap-2">
             <button
+              type="button"
               onClick={onExplore}
-              className="px-5 py-2.5 rounded-xl border border-slate-600 text-slate-300 hover:bg-slate-800 transition-colors text-sm"
+              className="rounded-lg border border-white/[0.08] px-3.5 py-2 text-xs text-zinc-400 hover:bg-white/[0.03] hover:text-zinc-200 transition-colors"
             >
-              Go to Any-Day Explorer
+              Any-Day Explorer
             </button>
             <button
+              type="button"
               onClick={onShowGuide}
-              className="px-5 py-2.5 rounded-xl border border-cyan-600/50 text-cyan-300 hover:bg-cyan-500/10 transition-colors text-sm"
+              className="rounded-lg border border-cyan-500/20 px-3.5 py-2 text-xs text-cyan-400/90 hover:bg-cyan-500/5 transition-colors"
             >
-              Show export steps again
+              Export steps
             </button>
           </div>
         </div>
       </div>
 
       {progress && (
-        <div className="bg-slate-800/60 border border-slate-700 rounded-xl p-4 text-sm text-slate-300">
-          <p className="font-medium text-cyan-300">{progress.message}</p>
-          <p className="text-slate-500 text-xs mt-1">
-            Files seen: {progress.filesSeen} · Memories: {progress.memoriesFound} · Phase: {progress.phase}
+        <div className="rounded-xl border border-white/[0.06] bg-zinc-900/50 px-4 py-3 text-sm">
+          <p className="font-medium text-cyan-300/90">{progress.message}</p>
+          <p className="text-[11px] text-zinc-600 mt-1 tabular-nums">
+            Files {progress.filesSeen} · Memories {progress.memoriesFound} · {progress.phase}
           </p>
         </div>
       )}
 
       {error && (
-        <div className="bg-red-500/10 border border-red-500/30 rounded-xl p-4 text-sm text-red-200">
+        <div className="rounded-xl border border-red-500/20 bg-red-500/5 px-4 py-3 text-sm text-red-200/90">
           {error}
         </div>
       )}
 
-      <div className="bg-amber-500/10 border border-amber-500/30 rounded-xl p-4 text-sm text-amber-200/90 space-y-2">
+      <div className="rounded-xl border border-amber-500/15 bg-amber-500/5 px-4 py-3 text-xs text-amber-200/70 space-y-1">
         <p>
-          <strong>Privacy first:</strong> All processing happens in your browser. No data leaves your device.
-          No Facebook login required.
-        </p>
-        <p className="text-amber-200/70 text-xs">
-          JSON Facebook archives are supported. HTML exports are rejected with guidance to re-request JSON.
+          <strong className="text-amber-200/90">Privacy first.</strong> Processing runs in your
+          browser. No Facebook login. No server receives your archive.
         </p>
       </div>
     </div>
