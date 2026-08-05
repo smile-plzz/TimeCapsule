@@ -1,4 +1,4 @@
-import { useState, useMemo, useCallback, useEffect } from 'react'
+import { useState, useMemo, useCallback, useEffect, type ReactNode } from 'react'
 import {
   Calendar,
   Search,
@@ -23,6 +23,7 @@ import {
 } from 'lucide-react'
 import { sampleMemories, COLLECTIONS } from './data/sampleMemories'
 import type { Memory, ViewMode, Mood } from './lib/types'
+import { ImportPanel } from './components/ImportPanel'
 
 const MONTHS = [
   'January', 'February', 'March', 'April', 'May', 'June',
@@ -38,7 +39,7 @@ const MOOD_EMOJI: Record<Mood, string> = {
   neutral: '😐',
 }
 
-const TYPE_ICON: Record<string, React.ReactNode> = {
+const TYPE_ICON: Record<string, ReactNode> = {
   status: <MessageSquare className="w-4 h-4" />,
   photo: <ImageIcon className="w-4 h-4" />,
   video: <ImageIcon className="w-4 h-4" />,
@@ -51,7 +52,7 @@ const TYPE_ICON: Record<string, React.ReactNode> = {
 type OnboardingStep = 'welcome' | 'why' | 'how' | 'ready'
 
 function App() {
-  const [memories] = useState<Memory[]>(sampleMemories)
+  const [memories, setMemories] = useState<Memory[]>(sampleMemories)
   const [view, setView] = useState<ViewMode>('explorer')
   const [selectedMonth, setSelectedMonth] = useState(8)
   const [selectedDay, setSelectedDay] = useState(5)
@@ -60,13 +61,11 @@ function App() {
   const [compareYearA, setCompareYearA] = useState(2015)
   const [compareYearB, setCompareYearB] = useState(2025)
 
-  // Onboarding state (V-DEFAULT / V-SHORTCUT / first-run)
   const [showOnboarding, setShowOnboarding] = useState(false)
   const [onboardingStep, setOnboardingStep] = useState<OnboardingStep>('welcome')
   const [hasSeenOnboarding, setHasSeenOnboarding] = useState(false)
 
   useEffect(() => {
-    // First visit: offer onboarding. Demo data is already loaded so UVP works immediately.
     const seen = localStorage.getItem('timecapsule_onboarding_seen')
     if (!seen) {
       setShowOnboarding(true)
@@ -79,7 +78,6 @@ function App() {
     localStorage.setItem('timecapsule_onboarding_seen', '1')
     setHasSeenOnboarding(true)
     setShowOnboarding(false)
-    // V-DEFAULT: land on Any-Day Explorer with a high-value day already selected
     setSelectedMonth(8)
     setSelectedDay(5)
     setView('explorer')
@@ -123,16 +121,6 @@ function App() {
     return [...new Set(memories.map(m => m.year))].sort((a, b) => b - a)
   }, [memories])
 
-  const handleFileImport = useCallback(() => {
-    // Real Facebook ZIP/JSON parser is still the critical path (03-Dev).
-    // For now we keep the golden path on demo data and guide the user honestly.
-    alert(
-      'Real Facebook archive parsing is the next milestone.\n\n' +
-      'Demo memories are already loaded so you can experience the Any-Day Explorer right now.\n\n' +
-      'When the parser ships, drop your JSON ZIP here and everything stays on your device.'
-    )
-  }, [])
-
   const navItems = [
     { id: 'explorer' as ViewMode, label: 'Any-Day', icon: Calendar },
     { id: 'heatmap' as ViewMode, label: 'Heatmap', icon: Grid3X3 },
@@ -144,7 +132,6 @@ function App() {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-950 via-slate-900 to-indigo-950">
-      {/* Onboarding overlay */}
       {showOnboarding && (
         <OnboardingFlow
           step={onboardingStep}
@@ -421,8 +408,15 @@ function App() {
           )}
 
           {view === 'import' && (
-            <ImportView
-              onFileSelect={handleFileImport}
+            <ImportPanel
+              onMemoriesLoaded={(mems) => {
+                setMemories(mems)
+                if (mems[0]) {
+                  setSelectedMonth(mems[0].month)
+                  setSelectedDay(mems[0].day)
+                }
+                setView('explorer')
+              }}
               onExplore={() => setView('explorer')}
               onShowGuide={() => { setOnboardingStep('how'); setShowOnboarding(true) }}
             />
@@ -432,8 +426,6 @@ function App() {
     </div>
   )
 }
-
-/* ───────────── Onboarding Flow (07-Dev + 07-Support copy) ───────────── */
 
 function OnboardingFlow({
   step,
@@ -452,7 +444,6 @@ function OnboardingFlow({
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/90 backdrop-blur-sm p-4">
       <div className="w-full max-w-lg bg-slate-900 border border-slate-700 rounded-2xl shadow-2xl overflow-hidden">
-        {/* Progress */}
         <div className="flex gap-1.5 px-6 pt-5">
           {steps.map((s, i) => (
             <div
@@ -605,68 +596,6 @@ function OnboardingFlow({
     </div>
   )
 }
-
-/* ───────────── Import View ───────────── */
-
-function ImportView({
-  onFileSelect,
-  onExplore,
-  onShowGuide,
-}: {
-  onFileSelect: () => void
-  onExplore: () => void
-  onShowGuide: () => void
-}) {
-  return (
-    <div className="space-y-8 max-w-2xl">
-      <h2 className="text-2xl font-semibold text-white">Import Your Archive</h2>
-
-      <div className="bg-slate-800/40 border border-slate-700 rounded-2xl p-8 text-center space-y-6">
-        <div className="w-16 h-16 mx-auto rounded-2xl bg-gradient-to-br from-cyan-500/20 to-indigo-500/20 flex items-center justify-center">
-          <Upload className="w-8 h-8 text-cyan-400" />
-        </div>
-        <div>
-          <h3 className="text-lg font-medium text-white mb-2">Facebook Data Download</h3>
-          <p className="text-slate-400 text-sm leading-relaxed">
-            Request your archive from Meta in <strong className="text-amber-300">JSON</strong> format,
-            then drop the ZIP here. All processing stays on your device.
-          </p>
-        </div>
-
-        <label className="inline-flex items-center gap-2 px-6 py-3 rounded-xl bg-cyan-600 hover:bg-cyan-500 text-white font-medium cursor-pointer transition-colors">
-          <Upload className="w-4 h-4" />
-          Select Facebook ZIP
-          <input type="file" accept=".zip" className="hidden" onChange={onFileSelect} />
-        </label>
-
-        <div className="pt-4 border-t border-slate-700 space-y-3">
-          <p className="text-slate-500 text-sm">Demo data is already loaded so you can explore now</p>
-          <div className="flex flex-wrap justify-center gap-3">
-            <button
-              onClick={onExplore}
-              className="px-5 py-2.5 rounded-xl border border-slate-600 text-slate-300 hover:bg-slate-800 transition-colors text-sm"
-            >
-              Go to Any-Day Explorer
-            </button>
-            <button
-              onClick={onShowGuide}
-              className="px-5 py-2.5 rounded-xl border border-cyan-600/50 text-cyan-300 hover:bg-cyan-500/10 transition-colors text-sm"
-            >
-              Show export steps again
-            </button>
-          </div>
-        </div>
-      </div>
-
-      <div className="bg-amber-500/10 border border-amber-500/30 rounded-xl p-4 text-sm text-amber-200/90 space-y-2">
-        <p><strong>Privacy first:</strong> All processing happens in your browser. No data leaves your device. No Facebook login required.</p>
-        <p className="text-amber-200/70 text-xs">Real ZIP/JSON parsing is the next engineering milestone. Until then the full experience runs on rich demo memories.</p>
-      </div>
-    </div>
-  )
-}
-
-/* ───────────── Shared components ───────────── */
 
 function MemoryCard({ memory, compact = false }: { memory: Memory; compact?: boolean }) {
   return (
