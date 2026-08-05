@@ -2,11 +2,11 @@
 
 **Every day has a story. Rediscover yours.**
 
-TimeCapsule is a personal memory explorer that transforms a user’s Facebook archive into a searchable, interactive timeline. Instead of waiting for Facebook to remind you of memories, you can instantly travel to any date across all years and rediscover what happened.
+TimeCapsule turns a Facebook archive into a searchable, interactive personal timeline. Pick any calendar day and instantly see every memory from that day across all the years you have.
 
-Everything runs **entirely offline** in your browser. No cloud upload. No Facebook login. Privacy first.
+Privacy-first and offline-first: import happens locally, processing stays on your device, and there is no Facebook login.
 
-## Live Demo / Run Locally
+## Run it
 
 ```bash
 git clone https://github.com/smile-plzz/TimeCapsule.git
@@ -15,42 +15,50 @@ npm install
 npm run dev
 ```
 
-Then open http://localhost:5173
+Open http://localhost:5173
 
-## Features (MVP implemented)
+Demo data is pre-loaded so you can experience the core “any day across years” flow immediately.
 
-- **Any-Day Explorer** — Pick any month + day and see every memory from that calendar day across all years (vertical Timeline Stack).
-- **Calendar Heatmap** — GitHub-style contribution graph of your posting activity. Click any day to jump into the explorer.
-- **Search Everything** — Full-text search across captions, locations, people, and tags.
-- **Anniversary Collections** — Auto-generated collections for Birthdays, Eids, New Years, Valentines, Vacations, Graduations.
-- **Compare Years** — Side-by-side view of the same calendar day in two different years.
-- **Demo data** — Rich sample memories so you can explore the UI immediately.
-- **Import UI** — Ready for Facebook ZIP; full JSON parser is the next milestone.
+## What works today (MVP surfaces)
 
-## Tech Stack
+| Surface | Status |
+|---------|--------|
+| **Any-Day Explorer** + Timeline Stack | ✅ Working with demo data |
+| **Calendar Heatmap** (clickable) | ✅ |
+| **Search** (captions, locations, people, tags) | ✅ |
+| **Anniversary Collections** | ✅ |
+| **Compare Years** | ✅ |
+| **Import UI** | ✅ UI + privacy messaging; real Facebook ZIP/JSON parser is the next milestone |
+| Photo viewer for real media | Not yet (needs archive media resolution) |
+| On-device AI summaries | Not yet |
 
-- React 19 + TypeScript
-- Vite 8
-- Tailwind CSS v4
-- date-fns, lucide-react, clsx, JSZip
+## Golden-path demo (under 60 seconds)
 
-## Product Vision
+1. Open the app → you land on **Any-Day Explorer** for August 5.
+2. Scroll the vertical stack — memories from 2009 through 2025 appear for the same calendar day.
+3. Switch to **Heatmap**, click a dense square → jumps back to Explorer for that day.
+4. Try **Search** for “Japan” or “birthday”.
+5. Open **Collections** → “My Birthdays”.
 
-Full product concept lives in [`PRODUCT.md`](PRODUCT.md).
-Engineering guidance in [`CLAUDE.md`](CLAUDE.md).
-Product audits in [`audits/`](audits/).
+## Product truth
 
-## Privacy
+- Full vision, user stories, MVP definition, and roadmap → [`PRODUCT.md`](PRODUCT.md)
+- Engineering invariants and current architecture notes → [`CLAUDE.md`](CLAUDE.md)
+- Structured evaluation system → [`audits/`](audits/)
 
-- No server required for core use
-- No Facebook authentication
-- Archive never leaves the device
-- All processing is local
+## Privacy promise
+
+- No server that receives your archive
+- No Facebook authentication flow
+- All processing intended to stay on-device
+
+## Next engineering priorities (from PRODUCT.md + audits)
+
+1. Real Facebook ZIP + JSON parser (domain 03)
+2. Media path resolution + in-flow photo viewer
+3. Local AI summaries that degrade gracefully (domain 05)
+4. Stronger first-run → first multi-year “wow” path (domain 07)
 
 ## License
 
 MIT
-
----
-
-Built for people who have years of digital history waiting to be rediscovered.
