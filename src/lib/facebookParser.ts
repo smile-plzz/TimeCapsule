@@ -1,16 +1,8 @@
 /**
  * Facebook archive parser (domain 03 — Import Pipeline)
  *
- * Hard constraints from CLAUDE.md / PRODUCT.md:
- * - All processing stays in the browser
- * - Soft-fail per file; never abort the whole import on one bad JSON
- * - Idempotent: calling again replaces the in-memory set cleanly
- *
- * Supported: Meta "Download Your Information" JSON ZIPs (posts, photos metadata).
- * HTML exports are rejected with a clear error.
- *
- * Media: extracts relative URIs from attachments and resolves them to blob:
- * URLs from the same ZIP so the UI can show photos without leaving the device.
+ * All processing stays in the browser. Soft-fail per file.
+ * Media: extracts relative URIs from attachments and resolves them to blob URLs.
  */
 
 import JSZip from 'jszip'
@@ -38,12 +30,7 @@ export type ImportResult = {
 
 type ProgressCb = (p: ImportProgress) => void
 
-const POST_PATH_HINTS = [
-  'posts',
-  'your_posts',
-  'post',
-  'activity_and_posts',
-]
+const POST_PATH_HINTS = ['posts', 'your_posts', 'post', 'activity_and_posts']
 
 function isLikelyPostsJson(path: string): boolean {
   const lower = path.toLowerCase().replace(/\\/g, '/')
@@ -88,12 +75,7 @@ function timestampToParts(ts: number | string | undefined): {
   const year = d.getFullYear()
   const month = d.getMonth() + 1
   const day = d.getDate()
-  return {
-    date: `${year}-${pad(month)}-${pad(day)}`,
-    year,
-    month,
-    day,
-  }
+  return { date: `${year}-${pad(month)}-${pad(day)}`, year, month, day }
 }
 
 function guessType(entry: Record<string, unknown>, hasMedia: boolean): MemoryType {
@@ -140,7 +122,6 @@ function extractLocation(entry: Record<string, unknown>): string | undefined {
   return undefined
 }
 
-/** Collect relative media URIs from common Meta attachment shapes. */
 function extractMediaUris(entry: Record<string, unknown>): string[] {
   const uris: string[] = []
   const push = (u: unknown) => {
@@ -148,7 +129,6 @@ function extractMediaUris(entry: Record<string, unknown>): string[] {
       uris.push(u.replace(/^\/+/, ''))
     }
   }
-
   const walk = (node: unknown, depth = 0) => {
     if (depth > 8 || node == null) return
     if (Array.isArray(node)) {
@@ -166,7 +146,6 @@ function extractMediaUris(entry: Record<string, unknown>): string[] {
       if (o[key] != null) walk(o[key], depth + 1)
     }
   }
-
   walk(entry)
   return [...new Set(uris)]
 }
@@ -200,27 +179,19 @@ function extractPeople(entry: Record<string, unknown>): string[] | undefined {
   return names.length ? [...new Set(names)] : undefined
 }
 
-function entryToMemory(
-  entry: Record<string, unknown>,
-  idPrefix: string,
-  index: number,
-): Memory | null {
+function entryToMemory(entry: Record<string, unknown>, idPrefix: string, index: number): Memory | null {
   const ts =
     (entry.timestamp as number | string | undefined) ??
     (entry.update_timestamp as number | string | undefined) ??
     (entry.creation_timestamp as number | string | undefined)
-
   const parts = timestampToParts(ts)
   if (!parts) return null
-
   const mediaUris = extractMediaUris(entry)
   const text = extractText(entry)
   const title = extractTitle(entry)
   if (!text && !title && mediaUris.length === 0) {
-    const t = guessType(entry, false)
-    if (t === 'status') return null
+    if (guessType(entry, false) === 'status') return null
   }
-
   const mem: Memory = {
     id: `${idPrefix}-${index}`,
     date: parts.date,
@@ -233,17 +204,16 @@ function entryToMemory(
     location: extractLocation(entry),
     people: extractPeople(entry),
     mediaUrl: mediaUris[0],
+    mediaUrls: mediaUris.length ? [...mediaUris] : undefined,
     tags: [],
     mood: 'neutral' as Mood,
   }
-
   const blob = `${title ?? ''} ${text ?? ''}`.toLowerCase()
   if (blob.includes('birthday')) mem.tags!.push('birthday')
   if (blob.includes('eid')) mem.tags!.push('eid')
   if (blob.includes('new year')) mem.tags!.push('newyear')
   if (blob.includes('travel') || blob.includes('trip')) mem.tags!.push('travel')
   if (blob.includes('university') || blob.includes('campus')) mem.tags!.push('university')
-
   return mem
 }
 
@@ -293,6 +263,26 @@ function mimeFromPath(path: string): string {
   return 'image/jpeg'
 }
 
+async function resolveOne(
+  zip: JSZip,
+  rel: string,
+  cache: Map<string, string>,
+): Promise<string | null> {
+  if (rel.startsWith('blob:') || rel.startsWith('http') || rel.startsWith('data:')) return rel
+  if (cache.has(rel)) return cache.get(rel)!
+  const entry = findZipFile(zip, rel)
+  if (!entry) return null
+  try {
+    const buf = await entry.async('arraybuffer')
+    const blob = new Blob([buf], { type: mimeFromPath(rel) })
+    const url = URL.createObjectURL(blob)
+    cache.set(rel, url)
+    return url
+  } catch {
+    return null
+  }
+}
+
 async function resolveMediaBlobs(
   zip: JSZip,
   memories: Memory[],
@@ -300,49 +290,35 @@ async function resolveMediaBlobs(
 ): Promise<number> {
   let resolved = 0
   const cache = new Map<string, string>()
-
   for (let i = 0; i < memories.length; i++) {
     const m = memories[i]
-    if (!m.mediaUrl || m.mediaUrl.startsWith('blob:') || m.mediaUrl.startsWith('http')) continue
-
-    const rel = m.mediaUrl
-    if (cache.has(rel)) {
-      m.mediaUrl = cache.get(rel)
-      resolved++
-      continue
+    const candidates = m.mediaUrls?.length ? m.mediaUrls : m.mediaUrl ? [m.mediaUrl] : []
+    if (!candidates.length) continue
+    const resolvedList: string[] = []
+    for (const rel of candidates) {
+      const url = await resolveOne(zip, rel, cache)
+      if (url) {
+        resolvedList.push(url)
+        resolved++
+      }
     }
-
-    const entry = findZipFile(zip, rel)
-    if (!entry) continue
-
-    try {
-      const buf = await entry.async('arraybuffer')
-      const blob = new Blob([buf], { type: mimeFromPath(rel) })
-      const url = URL.createObjectURL(blob)
-      cache.set(rel, url)
-      m.mediaUrl = url
-      resolved++
-    } catch {
-      // soft-fail single media file
+    if (resolvedList.length) {
+      m.mediaUrls = resolvedList
+      m.mediaUrl = resolvedList[0]
     }
-
     if (i % 20 === 0) {
       onProgress?.({
         phase: 'media',
-        message: `Resolving media… ${resolved} photos`,
+        message: `Resolving media… ${resolved} files`,
         filesSeen: memories.length,
         memoriesFound: memories.length,
       })
     }
   }
-
   return resolved
 }
 
-export async function parseFacebookZip(
-  file: File,
-  onProgress?: ProgressCb,
-): Promise<ImportResult> {
+export async function parseFacebookZip(file: File, onProgress?: ProgressCb): Promise<ImportResult> {
   const errors: string[] = []
   const warnings: string[] = []
   const memories: Memory[] = []
@@ -386,14 +362,12 @@ export async function parseFacebookZip(
     for (const path of jsonPaths) {
       filesScanned++
       const lower = path.toLowerCase()
-
       const interesting =
         isLikelyPostsJson(path) ||
         lower.includes('profile_information') ||
         lower.includes('your_post') ||
         lower.includes('album') ||
         lower.includes('photos_and_videos')
-
       if (!interesting && !lower.includes('posts')) continue
 
       try {
@@ -406,7 +380,6 @@ export async function parseFacebookZip(
           continue
         }
         jsonFiles++
-
         const entries = collectEntries(data)
         let localIndex = 0
         for (const entry of entries) {
@@ -416,7 +389,6 @@ export async function parseFacebookZip(
             postsParsed++
           }
         }
-
         report({
           phase: 'parsing',
           message: `Parsed ${path.split('/').pop()}`,
