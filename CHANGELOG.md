@@ -5,6 +5,12 @@ Format: date · summary · optional commit range.
 
 ---
 
+## 2026-08-05 — Status sync (parser is live)
+
+- `STATUS.md` updated: real Facebook ZIP/JSON parser is implemented and wired through ImportPanel → App.
+- Next priority reframed to media path resolution + in-flow photo viewer.
+- CHANGELOG/STATUS no longer claim the import handler is stubbed.
+
 ## 2026-08-05 — Live tracking docs
 
 - Added `STATUS.md` (current state), `CHANGELOG.md`, `docs/TRACKING.md` (update protocol).
@@ -29,7 +35,7 @@ Format: date · summary · optional commit range.
 - Vite + React 19 + TypeScript + Tailwind 4 scaffold.
 - `src/App.tsx`: Any-Day Explorer, heatmap, search, collections, compare years, import UI.
 - `src/data/sampleMemories.ts` demo corpus; golden path demoable without real ZIP.
-- `jszip` added for upcoming parser; import handler still stubbed.
+- `jszip` + `facebookParser.ts` + `ImportPanel` for real JSON ZIP imports.
 - README / CLAUDE.md updated for commands and current architecture.
 
 ## 2026-08-05 — Project foundation
