@@ -1,86 +1,45 @@
-# Evaluation Agent 08 — Retention Loop & Product Flow
+# Domain 08 — Retention Loop
 
-**Role:** Habit, revisit, and ongoing product-flow reviewer.
-**Primary question:** After the first wow, why does someone open TimeCapsule again next week — and does the product flow support that loop without becoming a graveyard of features?
+**Primary question:** After the first wow, why open TimeCapsule again — and does flow support that loop?
 
-You care about the metrics: **multiple visits per month**, **session length >10 minutes on large archives**, engagement with summaries — and you distrust features that don’t feed a loop.
+**Process:** [`CHARTER.md`](CHARTER.md) · **Ownership:** [`ROSTER.md`](ROSTER.md) §08  
+**Do not run as one blended agent.**
+
+## Team (exclusive — no overlap)
+
+| Role | Specialist | Owns |
+|------|------------|------|
+| **Dev** | `08-Dev Habit Surfaces` | `R-IA` `R-RETURN` `R-UPDATE` `R-LINK` |
+| **QA** | `08-QA Revisit Tests` | `R-SECOND` `R-LOOP` `R-DEAD` `R-METRIC` |
+| **Support** | `08-Support Continuity Copy` | `R-RETURN-COPY` `R-NEXT` `R-NO-GUILT` `R-STALE` |
+
+Handoff first-time export depth → 07 · privacy wipe → 01.
 
 ---
 
-## Mandate
+## Loop hypothesis
 
-1. Define the core retention loop (trigger → action → reward → investment).
-2. Trace multi-session product flow: return entry points, continuity, growing value of the index.
-3. Separate loops that reinforce the UVP from loops that are engagement theater.
-4. Check that AI, collections, and search deepen the same habit rather than competing homes.
-
-## Ideal loop (hypothesis to test)
-
-- **Trigger:** calendar occasion, nostalgia, conversation, “what was I doing last year on…”
-- **Action:** open app → pick a day / search a place or person / open an anniversary collection
-- **Reward:** multi-year stack, photos, grounded insight
-- **Investment:** familiarity with *their* archive, saved views, sharper mental model of their history
+Trigger (occasion/question) → Action (day/search/collection) → Reward (stack/insight) → Investment (familiar archive, saved views)
 
 ## Checklist
 
-### Return triggers
-
-- [ ] Product works when the user arrives with a *question* (day, person, place, period)
-- [ ] Optional gentle local reminders do not require cloud or violate privacy posture
-- [ ] “This day” / occasion surfaces exist without copying Facebook’s passive-only model
-
-### Session flow
-
-- [ ] Information architecture has one primary hub (day explore or search) not ten equal doors
-- [ ] Cross-links: day → photo → person/place → another day, without dead ends
-- [ ] Long sessions supported: scroll performance, filters, way to bookmark a view
-
-### Value accumulation
-
-- [ ] Second visit is faster than first (index warm, recents, suggested questions)
-- [ ] AI summaries improve or diversify with use without locking core value behind AI
-- [ ] Re-import / archive update path exists so the library doesn’t go stale after one export
-
-### Anti-patterns
-
+- [ ] Works when user arrives with a question
+- [ ] One primary hub in IA, not ten equal doors
+- [ ] Cross-links without dead ends
+- [ ] Second visit faster than first
+- [ ] Re-import path so library doesn’t freeze at one export
 - [ ] No streak/guilt mechanics
-- [ ] No infinite roadmap surface on home that signals “unfinished product”
-- [ ] No requirement to complete profile quizzes to unlock timeline
 
-### Flow coherence with MVP
+## Output by role
 
-- [ ] Heatmap, mood, life chapters, replay (if present) feed back into day/search or are clearly secondary
-- [ ] Relationship timeline (if present) starts from user’s own archive only and returns to day/photo flows
-
-## Output format
+**Dev:** IA, return surfaces, re-import, cross-links  
+**QA:** second-session success, loop observability, dead ends  
+**Support:** return/next copy, no-guilt language, stale-archive guidance  
 
 ```markdown
-# Retention Loop & Product Flow evaluation — <date / artifact>
-
-## Retention verdict
-**CLEAR LOOP | PARTIAL LOOP | ONE-SHOT WOW ONLY**
-
-## Core loop statement
-Trigger → Action → Reward → Investment (as designed or as recommended).
-
-## Flow diagram (textual)
-Home/entry → primary paths → depth → return hooks.
-
-## What brings them back
-Ranked reasons the product earns a second session.
-
-## What fails to retain
-One-shot moments that don’t create a next question.
-
-## IA / navigation recommendations
-Concrete hierarchy changes.
-
-## Metrics alignment
-Which product behaviors should move revisit rate and session length; what to measure locally.
-
-## Blockers / Should-fix / Nits
+# 08 Retention — {Dev|QA|Support} — <date / commit>
+## Declaration
+## Findings
+## Handoffs
+## Severity list
 ```
-
-## Actionability rule
-
-Prefer one strong loop over many weak features. If a feature doesn’t appear in Trigger, Action, Reward, or Investment, recommend deferral or demotion in the IA.

@@ -1,81 +1,41 @@
-# Audit Agent 04 — Memory Experience (UX & Nostalgia)
+# Domain 04 — Memory Experience
 
-**Role:** Experience reviewer for rediscovery, not database administration.
-**Primary question:** Does the first session feel like opening a time capsule — or like querying a spreadsheet of posts?
+**Primary question:** Does the first session feel like rediscovery — or a database browser?
 
-You represent the primary user: someone with 5–15 years of Facebook history who is nostalgic, slightly emotional, and impatient with tools that feel clinical.
+**Process:** [`CHARTER.md`](CHARTER.md) · **Ownership:** [`ROSTER.md`](ROSTER.md) §04  
+**Do not run as one blended agent.**
+
+## Team (exclusive — no overlap)
+
+| Role | Specialist | Owns |
+|------|------------|------|
+| **Dev** | `04-Dev Experience Implementer` | `X-DAY-UI` `X-NAV` `X-MEDIA-VIEW` `X-PERF-UI` `X-A11Y` |
+| **QA** | `04-QA Experience Tester` | `X-FIRST` `X-SCAN` `X-EMPTY` `X-TONE-CHECK` |
+| **Support** | `04-Support Voice & Microcopy` | `X-VOICE` `X-EMPTY-COPY` `X-SUGGEST` `X-ONBOARD-LIGHT` |
+
+Handoff network privacy → 01 · parser → 03 · AI hallucination → 05.
 
 ---
 
-## Mandate
-
-1. Judge the emotional arc of the golden path (import → first multi-year day → linger).
-2. Ensure information density supports pattern-seeing without overwhelming.
-3. Protect tone: human, warm, never surveillance- or analytics-coded.
-4. Validate User Stories 1, 2, 3, and 5 as experiential outcomes, not just features on a list.
-
 ## Checklist
 
-### First-session magic
+- [ ] Post-import suggests a high-value day
+- [ ] Multi-year comparison obvious on one screen
+- [ ] Timeline scannable; photo viewer immediate
+- [ ] Empty states specific and kind
+- [ ] Voice = rediscover/story — not optimize/analyze/engage
+- [ ] No feature cemetery home; no forced full-feature tour before first day view
 
-- [ ] After import, the product suggests a high-value day (e.g. birthday, most-active day) rather than an empty calendar
-- [ ] Any-Day Explorer makes multi-year comparison obvious in one screen
-- [ ] Timeline stack order and grouping are scannable (year labels, media vs text)
-- [ ] Opening a photo or post feels immediate; chrome doesn’t fight nostalgia
+## Output by role
 
-### Clarity & control
-
-- [ ] Calendar / day picker is obvious; no hidden “power user” only path to the core UVP
-- [ ] Empty states are kind and specific (“No posts on March 12 in your archive”) not generic errors
-- [ ] Search results explain *why* they matched when non-obvious
-- [ ] User can navigate without learning a new jargon system (“entities,” “corpora,” etc.)
-
-### Tone & copy
-
-- [ ] UI voice matches tagline energy: rediscover, story, yours — not optimize, analyze, engage
-- [ ] AI summaries read like a thoughtful friend, not a dashboard KPI
-- [ ] No guilt or engagement hooks (“you haven’t visited in 12 days”)
-
-### Accessibility & practical UX
-
-- [ ] Keyboard and large-archive scroll performance acceptable
-- [ ] Text contrast and media captions available where possible
-- [ ] Works at common laptop sizes; mobile can be “usable” not “perfect” for MVP if stated
-
-### Anti-patterns to flag
-
-- Feature cemetery on the home screen (ten equal buttons, no hierarchy)
-- Walls of JSON-ish metadata next to photos
-- Forcing AI panels before the user has seen raw memories
-- Infinite onboarding before the first real day view
-
-## Output format
+**Dev:** UI structure / nav / viewer / perf fixes  
+**QA:** task success, scannability, empty states, tone flags  
+**Support:** voice strings, empty copy, suggested-day labels  
 
 ```markdown
-# Memory Experience audit — <date / commit / build>
-
-## Ship verdict
-**FEELS LIKE A PRODUCT | FEELS LIKE A PROTOTYPE | FEELS LIKE A DB TOOL**
-
-## Emotional arc (golden path)
-1. ...
-2. ...
-Where it breaks character, if anywhere.
-
-## What works
-- ...
-
-## Friction & fixes
-| Moment | Problem | Concrete fix |
-|--------|---------|--------------|
-| ... | ... | ... |
-
-## Copy & tone notes
-Specific strings to rewrite.
-
-## Blockers / Should-fix / Nits
+# 04 Memory Experience — {Dev|QA|Support} — <date / commit>
+## Declaration
+## Findings
+## Handoffs
+## Severity list
 ```
-
-## Actionability rule
-
-Prefer redesign prescriptions tied to a screen or flow (“On the day view, pin the year rail left and lazy-load media”) over generic “make it more delightful.”

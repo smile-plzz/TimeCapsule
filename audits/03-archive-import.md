@@ -1,83 +1,52 @@
-# Audit Agent 03 — Archive & Import
+# Domain 03 — Archive & Import
 
-**Role:** Facebook archive realism and import-pipeline reviewer.
-**Primary question:** Will messy, multi-year, multi-GB real exports actually load — and what breaks when they don’t?
+**Primary question:** Will messy real Facebook exports load — and what breaks when they don’t?
 
-You think like someone who has opened a real `facebook-*.zip` and found JSON encoding surprises, missing media, and “your data” folders that changed shape across years.
+**Process:** [`CHARTER.md`](CHARTER.md) · **Ownership:** [`ROSTER.md`](ROSTER.md) §03  
+**Do not run as one blended agent.**
+
+## Team (exclusive — no overlap)
+
+| Role | Specialist | Owns |
+|------|------------|------|
+| **Dev** | `03-Dev Import Pipeline` | `I-PARSE` `I-MEDIA` `I-STREAM` `I-IDEM` `I-ERR` |
+| **QA** | `03-QA Archive Realism` | `I-FIX` `I-FAIL` `I-PERF` `I-TZ` |
+| **Support** | `03-Support Export Guide` | `I-EXPORT-DOC` `I-FORMAT` `I-PROGRESS-UX` `I-RECOVER` |
+
+Handoff AI quality → 05 · activation *sequence* copy → 07 (format support statements stay here as `I-FORMAT`).
 
 ---
-
-## Mandate
-
-1. Stress the import path against format drift, partial archives, and large libraries.
-2. Require idempotent re-import and clear progress/error UX.
-3. Ensure media path resolution works when photos live beside JSON, not inside it.
-4. Protect the 95% import-completion and <60s first-discovery metrics from fantasy assumptions.
 
 ## Checklist
 
 ### Format & parsing
 
-- [ ] Documented which Facebook export format/version is supported (HTML vs JSON, account center vs classic)
-- [ ] Parser tolerates unknown fields without hard-fail
-- [ ] Timestamps normalized to a single timezone strategy (stated in UI or docs)
-- [ ] Posts, photos, videos, check-ins mapped to a common memory model
-- [ ] Soft-fail for individual corrupt files without aborting the whole import
+- [ ] Supported export format/version documented
+- [ ] Unknown fields soft-tolerated
+- [ ] Timestamp/timezone strategy stated
+- [ ] Common memory model for posts/photos/videos/check-ins
+- [ ] Per-file soft-fail without aborting whole import
 
-### Scale & performance
+### Scale & media
 
-- [ ] Progress UI for long imports (not a frozen spinner)
-- [ ] Reasonable memory use on a 5–15 year archive (or documented minimum hardware)
-- [ ] Index build time acceptable; first query after import timed on a reference set
-- [ ] Streaming / chunked parse preferred over “load entire ZIP into RAM” if size is large
+- [ ] Progress UI · reasonable memory use · index time acceptable
+- [ ] Media paths resolved; missing media placeholders
+- [ ] Re-import idempotent; cancel leaves clear state; full wipe possible
 
-### Media & paths
+### Edge probes
 
-- [ ] Photo/video files resolved relative to archive root
-- [ ] Missing media shows a clear placeholder, not a crash
-- [ ] Duplicate posts / reshared content handled without doubling the timeline noisily
+- Sparse years · photo-only · non-English/RTL · export without comments · midnight timezone on same-calendar-day
 
-### Recovery & hygiene
+## Output by role
 
-- [ ] Re-import updates or replaces without corrupting the library
-- [ ] Cancel mid-import leaves a clean or clearly partial state
-- [ ] User can delete imported data completely
-- [ ] Sample/fixture archive (anonymized) exists for regression tests — or a written plan to add one
-
-### Edge cases to explicitly probe
-
-- Empty years / sparse posting history
-- Only photos, almost no text
-- Non-English captions and RTL text
-- Archives with messages/comments excluded by user at export time
-- Clock-skewed or timezone-shifted posts around midnight on the “same calendar day” feature
-
-## Output format
+**Dev:** parser/media/stream design changes  
+**QA:** fixture matrix + failure-mode table + perf notes  
+**Support:** export guide + format + recovery language  
 
 ```markdown
-# Archive & Import audit — <date / commit / build>
-
-## Ship verdict
-**PASS | PASS WITH CONDITIONS | FAIL**
-
-## Supported export profile
-What was actually tested or claimed.
-
-## Failure modes found
-| Scenario | Actual behavior | Required behavior |
-|----------|-----------------|-------------------|
-| ... | ... | ... |
-
-## Performance notes
-Reference archive size, time-to-index, time-to-first-query.
-
-## Blockers / Should-fix / Nits
-Each item: change + definition of done.
-
-## Test gaps
-Fixtures or manual cases still missing before ship.
+# 03 Archive Import — {Dev|QA|Support} — <date / commit>
+## Declaration
+## Findings
+## Handoffs
+## Severity list
 ```
-
-## Actionability rule
-
-Do not accept “works on my export” as evidence. Demand either a second real archive profile or an explicit limitation statement in the README (“Supports JSON export from Account Center as of 202x”).
