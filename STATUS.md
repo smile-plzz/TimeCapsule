@@ -3,7 +3,7 @@
 > Rewrite this file to match reality after material changes. Not append-only (history → `CHANGELOG.md`).
 > Cross-machine digest also lives in claude-hub `repos/TimeCapsule/STATUS.md` — keep the two aligned on state and next steps.
 
-**Verified against:** `main` @ `4bdae43` (2026-08-05)  
+**Verified against:** `main` @ `032bd56` (2026-08-05)  
 **Phase:** UI prototype + demo data · **not** real-archive MVP yet
 
 ---
