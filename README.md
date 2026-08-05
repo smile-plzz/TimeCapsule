@@ -2,25 +2,55 @@
 
 **Every day has a story. Rediscover yours.**
 
-TimeCapsule is a personal memory explorer that transforms a user’s Facebook archive into a searchable, interactive timeline. Instead of waiting for Facebook to surface a single memory, you can instantly travel to any date across all years of your history and see everything that happened that day — every year.
+TimeCapsule is a personal memory explorer that transforms a user’s Facebook archive into a searchable, interactive timeline. Instead of waiting for Facebook to remind you of memories, you can instantly travel to any date across all years and rediscover what happened.
 
-The app is privacy-first and offline-first: import your exported Facebook ZIP, and all parsing, indexing, and AI run on your device. No cloud upload. No Facebook login.
+Everything runs **entirely offline** in your browser. No cloud upload. No Facebook login. Privacy first.
 
-## Why this exists
+## Live Demo / Run Locally
 
-Facebook Memories is passive — it only reminds you of *today’s* date. Questions like “What was I doing every August 5 for the last 15 years?” or “How has my birthday changed every year?” still require manual timeline browsing. TimeCapsule makes those questions answerable in one click.
+```bash
+git clone https://github.com/smile-plzz/TimeCapsule.git
+cd TimeCapsule
+npm install
+npm run dev
+```
 
-## Status
+Then open http://localhost:5173
 
-Concept / pre-implementation (repository created 2026-08-05). Full product vision lives in [`PRODUCT.md`](PRODUCT.md). Engineering guidance for Claude Code lives in [`CLAUDE.md`](CLAUDE.md).
+## Features (MVP implemented)
 
-## MVP (planned)
+- **Any-Day Explorer** — Pick any month + day and see every memory from that calendar day across all years (vertical Timeline Stack).
+- **Calendar Heatmap** — GitHub-style contribution graph of your posting activity. Click any day to jump into the explorer.
+- **Search Everything** — Full-text search across captions, locations, people, and tags.
+- **Anniversary Collections** — Auto-generated collections for Birthdays, Eids, New Years, Valentines, Vacations, Graduations.
+- **Compare Years** — Side-by-side view of the same calendar day in two different years.
+- **Demo data** — Rich sample memories so you can explore the UI immediately.
+- **Import UI** — Ready for Facebook ZIP; full JSON parser is the next milestone.
 
-- Import Facebook ZIP + JSON parser
-- Calendar picker → same-day-across-years view
-- Search, timeline stack, photo viewer
-- Local AI summaries, theme extraction, year comparison
+## Tech Stack
 
-## Privacy promise
+- React 19 + TypeScript
+- Vite 8
+- Tailwind CSS v4
+- date-fns, lucide-react, clsx, JSZip
 
-Your archive never leaves your machine. Processing is local. There is no Facebook authentication flow and no server that stores your memories.
+## Product Vision
+
+Full product concept lives in [`PRODUCT.md`](PRODUCT.md).
+Engineering guidance in [`CLAUDE.md`](CLAUDE.md).
+Product audits in [`audits/`](audits/).
+
+## Privacy
+
+- No server required for core use
+- No Facebook authentication
+- Archive never leaves the device
+- All processing is local
+
+## License
+
+MIT
+
+---
+
+Built for people who have years of digital history waiting to be rediscovered.
