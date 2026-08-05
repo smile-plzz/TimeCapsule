@@ -1,4 +1,4 @@
-import { useState, useMemo, useCallback } from 'react'
+import { useState, useMemo, useCallback, useEffect } from 'react'
 import {
   Calendar,
   Search,
@@ -11,9 +11,15 @@ import {
   BookOpen,
   GitCompare,
   ChevronLeft,
+  ChevronRight,
   Image as ImageIcon,
   MessageSquare,
   MapPinned,
+  Shield,
+  Download,
+  CheckCircle2,
+  AlertCircle,
+  ExternalLink,
 } from 'lucide-react'
 import { sampleMemories, COLLECTIONS } from './data/sampleMemories'
 import type { Memory, ViewMode, Mood } from './lib/types'
@@ -42,6 +48,8 @@ const TYPE_ICON: Record<string, React.ReactNode> = {
   other: <BookOpen className="w-4 h-4" />,
 }
 
+type OnboardingStep = 'welcome' | 'why' | 'how' | 'ready'
+
 function App() {
   const [memories] = useState<Memory[]>(sampleMemories)
   const [view, setView] = useState<ViewMode>('explorer')
@@ -51,6 +59,31 @@ function App() {
   const [selectedCollection, setSelectedCollection] = useState<string | null>(null)
   const [compareYearA, setCompareYearA] = useState(2015)
   const [compareYearB, setCompareYearB] = useState(2025)
+
+  // Onboarding state (V-DEFAULT / V-SHORTCUT / first-run)
+  const [showOnboarding, setShowOnboarding] = useState(false)
+  const [onboardingStep, setOnboardingStep] = useState<OnboardingStep>('welcome')
+  const [hasSeenOnboarding, setHasSeenOnboarding] = useState(false)
+
+  useEffect(() => {
+    // First visit: offer onboarding. Demo data is already loaded so UVP works immediately.
+    const seen = localStorage.getItem('timecapsule_onboarding_seen')
+    if (!seen) {
+      setShowOnboarding(true)
+    } else {
+      setHasSeenOnboarding(true)
+    }
+  }, [])
+
+  const completeOnboarding = useCallback(() => {
+    localStorage.setItem('timecapsule_onboarding_seen', '1')
+    setHasSeenOnboarding(true)
+    setShowOnboarding(false)
+    // V-DEFAULT: land on Any-Day Explorer with a high-value day already selected
+    setSelectedMonth(8)
+    setSelectedDay(5)
+    setView('explorer')
+  }, [])
 
   const dayMemories = useMemo(() => {
     return memories
@@ -91,9 +124,13 @@ function App() {
   }, [memories])
 
   const handleFileImport = useCallback(() => {
-    // Full Facebook ZIP/JSON parser is the next milestone (see PRODUCT.md + audits/03).
-    // For now the golden path uses the rich sample set so the UVP is demoable.
-    alert('Facebook archive parsing is the next implementation milestone. Demo data is already loaded so you can explore the Any-Day experience right away.')
+    // Real Facebook ZIP/JSON parser is still the critical path (03-Dev).
+    // For now we keep the golden path on demo data and guide the user honestly.
+    alert(
+      'Real Facebook archive parsing is the next milestone.\n\n' +
+      'Demo memories are already loaded so you can experience the Any-Day Explorer right now.\n\n' +
+      'When the parser ships, drop your JSON ZIP here and everything stays on your device.'
+    )
   }, [])
 
   const navItems = [
@@ -107,7 +144,17 @@ function App() {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-950 via-slate-900 to-indigo-950">
-      <header className="border-b border-slate-800/80 bg-slate-950/80 backdrop-blur sticky top-0 z-50">
+      {/* Onboarding overlay */}
+      {showOnboarding && (
+        <OnboardingFlow
+          step={onboardingStep}
+          setStep={setOnboardingStep}
+          onComplete={completeOnboarding}
+          onSkip={completeOnboarding}
+        />
+      )}
+
+      <header className="border-b border-slate-800/80 bg-slate-950/80 backdrop-blur sticky top-0 z-40">
         <div className="max-w-7xl mx-auto px-4 py-3 flex items-center justify-between">
           <div className="flex items-center gap-3">
             <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-cyan-400 to-indigo-500 flex items-center justify-center shadow-lg shadow-cyan-500/20">
@@ -120,8 +167,18 @@ function App() {
               <p className="text-xs text-slate-500">Every day has a story</p>
             </div>
           </div>
-          <div className="text-sm text-slate-400">
-            {memories.length} memories · {years.length} years
+          <div className="flex items-center gap-3">
+            <div className="text-sm text-slate-400">
+              {memories.length} memories · {years.length} years
+            </div>
+            {hasSeenOnboarding && (
+              <button
+                onClick={() => { setOnboardingStep('welcome'); setShowOnboarding(true) }}
+                className="text-xs text-slate-500 hover:text-cyan-400 transition-colors"
+              >
+                How to import
+              </button>
+            )}
           </div>
         </div>
       </header>
@@ -364,46 +421,252 @@ function App() {
           )}
 
           {view === 'import' && (
-            <div className="space-y-8 max-w-2xl">
-              <h2 className="text-2xl font-semibold text-white">Import Your Archive</h2>
-              <div className="bg-slate-800/40 border border-slate-700 rounded-2xl p-8 text-center space-y-6">
-                <div className="w-16 h-16 mx-auto rounded-2xl bg-gradient-to-br from-cyan-500/20 to-indigo-500/20 flex items-center justify-center">
-                  <Upload className="w-8 h-8 text-cyan-400" />
-                </div>
-                <div>
-                  <h3 className="text-lg font-medium text-white mb-2">Facebook Data Download</h3>
-                  <p className="text-slate-400 text-sm leading-relaxed">
-                    Download your information from Facebook (Settings → Your information → Download your information).
-                    Choose JSON format. Then select the ZIP here. Everything stays on your device — no cloud upload.
-                  </p>
-                </div>
-                <label className="inline-flex items-center gap-2 px-6 py-3 rounded-xl bg-cyan-600 hover:bg-cyan-500 text-white font-medium cursor-pointer transition-colors">
-                  <Upload className="w-4 h-4" />
-                  Select Facebook ZIP
-                  <input type="file" accept=".zip" className="hidden" onChange={handleFileImport} />
-                </label>
-                <div className="pt-4 border-t border-slate-700">
-                  <p className="text-slate-500 text-sm mb-3">Demo data is already loaded</p>
-                  <button
-                    onClick={() => setView('explorer')}
-                    className="px-5 py-2.5 rounded-xl border border-slate-600 text-slate-300 hover:bg-slate-800 transition-colors text-sm"
-                  >
-                    Go to Any-Day Explorer
-                  </button>
-                </div>
-              </div>
-
-              <div className="bg-amber-500/10 border border-amber-500/30 rounded-xl p-4 text-sm text-amber-200/90">
-                <strong>Privacy first:</strong> All processing happens in your browser. No data leaves your device.
-                No Facebook login required.
-              </div>
-            </div>
+            <ImportView
+              onFileSelect={handleFileImport}
+              onExplore={() => setView('explorer')}
+              onShowGuide={() => { setOnboardingStep('how'); setShowOnboarding(true) }}
+            />
           )}
         </main>
       </div>
     </div>
   )
 }
+
+/* ───────────── Onboarding Flow (07-Dev + 07-Support copy) ───────────── */
+
+function OnboardingFlow({
+  step,
+  setStep,
+  onComplete,
+  onSkip,
+}: {
+  step: OnboardingStep
+  setStep: (s: OnboardingStep) => void
+  onComplete: () => void
+  onSkip: () => void
+}) {
+  const steps: OnboardingStep[] = ['welcome', 'why', 'how', 'ready']
+  const idx = steps.indexOf(step)
+
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/90 backdrop-blur-sm p-4">
+      <div className="w-full max-w-lg bg-slate-900 border border-slate-700 rounded-2xl shadow-2xl overflow-hidden">
+        {/* Progress */}
+        <div className="flex gap-1.5 px-6 pt-5">
+          {steps.map((s, i) => (
+            <div
+              key={s}
+              className={`h-1 flex-1 rounded-full transition-colors ${
+                i <= idx ? 'bg-cyan-400' : 'bg-slate-700'
+              }`}
+            />
+          ))}
+        </div>
+
+        <div className="p-6 space-y-5">
+          {step === 'welcome' && (
+            <>
+              <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-cyan-400 to-indigo-500 flex items-center justify-center">
+                <Sparkles className="w-7 h-7 text-white" />
+              </div>
+              <h2 className="text-2xl font-semibold text-white">Every day has a story</h2>
+              <p className="text-slate-400 leading-relaxed">
+                Facebook only shows you one memory at a time. TimeCapsule lets you pick any calendar day
+                and instantly see every post, photo, and moment from that day across all the years you have.
+              </p>
+              <p className="text-slate-500 text-sm">
+                Everything stays on your device. No Facebook login. No cloud upload of your archive.
+              </p>
+            </>
+          )}
+
+          {step === 'why' && (
+            <>
+              <div className="w-14 h-14 rounded-2xl bg-cyan-500/15 border border-cyan-500/30 flex items-center justify-center">
+                <Shield className="w-7 h-7 text-cyan-400" />
+              </div>
+              <h2 className="text-2xl font-semibold text-white">Why we need your archive</h2>
+              <p className="text-slate-400 leading-relaxed">
+                To show you “every August 5 for the last 15 years,” we need the official copy of your
+                Facebook history. You download it once from Meta, then drop the ZIP here.
+              </p>
+              <ul className="space-y-2 text-sm text-slate-400">
+                <li className="flex items-start gap-2">
+                  <CheckCircle2 className="w-4 h-4 text-cyan-400 mt-0.5 shrink-0" />
+                  We never log into Facebook on your behalf
+                </li>
+                <li className="flex items-start gap-2">
+                  <CheckCircle2 className="w-4 h-4 text-cyan-400 mt-0.5 shrink-0" />
+                  The ZIP never leaves your browser
+                </li>
+                <li className="flex items-start gap-2">
+                  <CheckCircle2 className="w-4 h-4 text-cyan-400 mt-0.5 shrink-0" />
+                  You can delete everything locally at any time
+                </li>
+              </ul>
+            </>
+          )}
+
+          {step === 'how' && (
+            <>
+              <div className="w-14 h-14 rounded-2xl bg-indigo-500/15 border border-indigo-500/30 flex items-center justify-center">
+                <Download className="w-7 h-7 text-indigo-400" />
+              </div>
+              <h2 className="text-2xl font-semibold text-white">How to get your data</h2>
+              <ol className="space-y-3 text-sm text-slate-300">
+                <li className="flex gap-3">
+                  <span className="font-mono text-cyan-400 shrink-0">1</span>
+                  <span>On a computer, open Facebook → profile picture → <strong>Settings & privacy</strong> → <strong>Settings</strong></span>
+                </li>
+                <li className="flex gap-3">
+                  <span className="font-mono text-cyan-400 shrink-0">2</span>
+                  <span>Open <strong>Accounts Center</strong> → <strong>Your information and permissions</strong> → <strong>Download / Export your information</strong></span>
+                </li>
+                <li className="flex gap-3">
+                  <span className="font-mono text-cyan-400 shrink-0">3</span>
+                  <span>Select your profile, date range <strong>All time</strong>, format <strong className="text-amber-300">JSON</strong> (not HTML), media quality High</span>
+                </li>
+                <li className="flex gap-3">
+                  <span className="font-mono text-cyan-400 shrink-0">4</span>
+                  <span>Create the export. Meta will email you when the ZIP is ready (minutes to a couple of days)</span>
+                </li>
+                <li className="flex gap-3">
+                  <span className="font-mono text-cyan-400 shrink-0">5</span>
+                  <span>Download the ZIP and come back here</span>
+                </li>
+              </ol>
+              <div className="flex items-start gap-2 bg-amber-500/10 border border-amber-500/30 rounded-lg p-3 text-xs text-amber-200/90">
+                <AlertCircle className="w-4 h-4 shrink-0 mt-0.5" />
+                <span><strong>Critical:</strong> Choose <strong>JSON</strong> format. HTML archives cannot be parsed by TimeCapsule.</span>
+              </div>
+              <a
+                href="https://www.facebook.com/dyi"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex items-center gap-1.5 text-sm text-cyan-400 hover:underline"
+              >
+                Open Facebook Download Your Information <ExternalLink className="w-3.5 h-3.5" />
+              </a>
+            </>
+          )}
+
+          {step === 'ready' && (
+            <>
+              <div className="w-14 h-14 rounded-2xl bg-emerald-500/15 border border-emerald-500/30 flex items-center justify-center">
+                <CheckCircle2 className="w-7 h-7 text-emerald-400" />
+              </div>
+              <h2 className="text-2xl font-semibold text-white">You’re ready to explore</h2>
+              <p className="text-slate-400 leading-relaxed">
+                Demo memories are already loaded so you can experience the Any-Day Explorer immediately.
+                When your real JSON ZIP arrives, bring it to the Import screen — everything stays on your device.
+              </p>
+              <p className="text-slate-500 text-sm">
+                Tip: start with August 5 (or your birthday) to see the multi-year stack in action.
+              </p>
+            </>
+          )}
+        </div>
+
+        <div className="px-6 pb-6 flex items-center justify-between gap-3">
+          <button
+            onClick={onSkip}
+            className="text-sm text-slate-500 hover:text-slate-300 transition-colors"
+          >
+            Skip for now
+          </button>
+          <div className="flex gap-2">
+            {idx > 0 && (
+              <button
+                onClick={() => setStep(steps[idx - 1])}
+                className="px-4 py-2 rounded-xl border border-slate-600 text-slate-300 text-sm hover:bg-slate-800 transition-colors"
+              >
+                Back
+              </button>
+            )}
+            {idx < steps.length - 1 ? (
+              <button
+                onClick={() => setStep(steps[idx + 1])}
+                className="px-5 py-2 rounded-xl bg-cyan-600 hover:bg-cyan-500 text-white text-sm font-medium transition-colors inline-flex items-center gap-1.5"
+              >
+                Continue <ChevronRight className="w-4 h-4" />
+              </button>
+            ) : (
+              <button
+                onClick={onComplete}
+                className="px-5 py-2 rounded-xl bg-cyan-600 hover:bg-cyan-500 text-white text-sm font-medium transition-colors"
+              >
+                Explore my memories
+              </button>
+            )}
+          </div>
+        </div>
+      </div>
+    </div>
+  )
+}
+
+/* ───────────── Import View ───────────── */
+
+function ImportView({
+  onFileSelect,
+  onExplore,
+  onShowGuide,
+}: {
+  onFileSelect: () => void
+  onExplore: () => void
+  onShowGuide: () => void
+}) {
+  return (
+    <div className="space-y-8 max-w-2xl">
+      <h2 className="text-2xl font-semibold text-white">Import Your Archive</h2>
+
+      <div className="bg-slate-800/40 border border-slate-700 rounded-2xl p-8 text-center space-y-6">
+        <div className="w-16 h-16 mx-auto rounded-2xl bg-gradient-to-br from-cyan-500/20 to-indigo-500/20 flex items-center justify-center">
+          <Upload className="w-8 h-8 text-cyan-400" />
+        </div>
+        <div>
+          <h3 className="text-lg font-medium text-white mb-2">Facebook Data Download</h3>
+          <p className="text-slate-400 text-sm leading-relaxed">
+            Request your archive from Meta in <strong className="text-amber-300">JSON</strong> format,
+            then drop the ZIP here. All processing stays on your device.
+          </p>
+        </div>
+
+        <label className="inline-flex items-center gap-2 px-6 py-3 rounded-xl bg-cyan-600 hover:bg-cyan-500 text-white font-medium cursor-pointer transition-colors">
+          <Upload className="w-4 h-4" />
+          Select Facebook ZIP
+          <input type="file" accept=".zip" className="hidden" onChange={onFileSelect} />
+        </label>
+
+        <div className="pt-4 border-t border-slate-700 space-y-3">
+          <p className="text-slate-500 text-sm">Demo data is already loaded so you can explore now</p>
+          <div className="flex flex-wrap justify-center gap-3">
+            <button
+              onClick={onExplore}
+              className="px-5 py-2.5 rounded-xl border border-slate-600 text-slate-300 hover:bg-slate-800 transition-colors text-sm"
+            >
+              Go to Any-Day Explorer
+            </button>
+            <button
+              onClick={onShowGuide}
+              className="px-5 py-2.5 rounded-xl border border-cyan-600/50 text-cyan-300 hover:bg-cyan-500/10 transition-colors text-sm"
+            >
+              Show export steps again
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <div className="bg-amber-500/10 border border-amber-500/30 rounded-xl p-4 text-sm text-amber-200/90 space-y-2">
+        <p><strong>Privacy first:</strong> All processing happens in your browser. No data leaves your device. No Facebook login required.</p>
+        <p className="text-amber-200/70 text-xs">Real ZIP/JSON parsing is the next engineering milestone. Until then the full experience runs on rich demo memories.</p>
+      </div>
+    </div>
+  )
+}
+
+/* ───────────── Shared components ───────────── */
 
 function MemoryCard({ memory, compact = false }: { memory: Memory; compact?: boolean }) {
   return (
