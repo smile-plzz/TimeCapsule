@@ -1,43 +1,88 @@
-# TimeCapsule evaluation & audit agents
+# TimeCapsule evaluation agents — unified system
 
-Specialized agents for evaluating TimeCapsule before and during ship.
-Invoke any one (or a set) against the current tree, a PR, a demo build, or the product docs.
+**Start here → [`CHARTER.md`](CHARTER.md)** (roles, anti-overlap, anti-hallucination)  
+**Then → [`ROSTER.md`](ROSTER.md)** (exclusive Dev / QA / Support ownership per domain)  
+**Then → domain checklist `01`–`08`** for topic criteria only
 
-## Ship / quality audits
+---
 
-| Agent | File | Primary question |
-|-------|------|------------------|
-| **Privacy & Trust** | [`01-privacy-trust.md`](01-privacy-trust.md) | Does this still keep memories on-device and honest about it? |
-| **MVP Scope & Ship** | [`02-mvp-scope-ship.md`](02-mvp-scope-ship.md) | Is this the smallest thing that proves the UVP, or are we building the roadmap? |
-| **Archive & Import** | [`03-archive-import.md`](03-archive-import.md) | Will real Facebook ZIPs actually load, fast, and recover from mess? |
-| **Memory Experience** | [`04-memory-experience.md`](04-memory-experience.md) | Does the first session feel like rediscovery, not a database browser? |
-| **AI Integrity** | [`05-ai-integrity.md`](05-ai-integrity.md) | Do AI summaries help without inventing a life the user didn’t live? |
+## How the system is structured
 
-## Market fit & product flow evaluations
+```
+CHARTER.md          ← process law (roles, severity, no blending, no inventing)
+ROSTER.md           ← who owns which concern IDs (no overlap)
+01…08 *.md          ← domain checklists + report templates
+```
 
-| Agent | File | Primary question |
-|-------|------|------------------|
-| **Market Fit** | [`06-market-fit.md`](06-market-fit.md) | Who is this for, what job does it own, and why not Memories/Photos instead? |
-| **Activation Flow** | [`07-activation-flow.md`](07-activation-flow.md) | How fast from install/export to first multi-year “wow,” and where does the funnel break? |
-| **Retention Loop** | [`08-retention-loop.md`](08-retention-loop.md) | After the first wow, why open it again — and does navigation support that loop? |
+Each **domain** has exactly **three specialists**:
 
-## How to run
+| Role | Focus |
+|------|--------|
+| **Dev** | How to build/fix it |
+| **QA** | Whether it’s true / tested |
+| **Support** | What users see and are told |
 
-Give the agent file + the artifact under review (code, PR diff, demo notes, or `PRODUCT.md` / `CLAUDE.md`) and ask it to produce the verdict section in its required output format.
+They never merge into one voice in a single answer. Parallel work is allowed **only** on different concern IDs.
 
-Example prompt:
+---
 
-> You are the Market Fit evaluation agent defined in `audits/06-market-fit.md`. Review TimeCapsule’s product docs and current build. Produce the full evaluation report in the required output format.
+## Domains
 
-### Suggested packs
+### Ship / quality
 
-- **Ship gate:** agents 01–05 (all blockers cleared)
-- **Product strategy:** agents 06–08 (fit, activation, retention)
-- **Full review:** 01–08 before calling a public launch
+| ID | Domain | Checklist |
+|----|--------|-----------|
+| 01 | Privacy & Trust | [`01-privacy-trust.md`](01-privacy-trust.md) |
+| 02 | MVP Scope & Ship | [`02-mvp-scope-ship.md`](02-mvp-scope-ship.md) |
+| 03 | Archive & Import | [`03-archive-import.md`](03-archive-import.md) |
+| 04 | Memory Experience | [`04-memory-experience.md`](04-memory-experience.md) |
+| 05 | AI Integrity | [`05-ai-integrity.md`](05-ai-integrity.md) |
 
-Treat any **Blocker** as non-negotiable; **Should-fix** can ship with a dated follow-up; **Nits** are optional.
+### Market fit & product flow
 
-## Source of truth
+| ID | Domain | Checklist |
+|----|--------|-----------|
+| 06 | Market Fit | [`06-market-fit.md`](06-market-fit.md) |
+| 07 | Activation Flow | [`07-activation-flow.md`](07-activation-flow.md) |
+| 08 | Retention Loop | [`08-retention-loop.md`](08-retention-loop.md) |
 
-- Product vision & MVP: [`../PRODUCT.md`](../PRODUCT.md)
-- Engineering invariants: [`../CLAUDE.md`](../CLAUDE.md)
+---
+
+## Before any task (mandatory)
+
+1. Open `ROSTER.md` and pick **one** Domain × Role.
+2. Paste the **pre-task declaration** from `ROSTER.md`.
+3. Work **only** listed concern IDs; handoff the rest.
+4. Use severity + evidence rules from `CHARTER.md`.
+
+### Specialist invoke
+
+```
+You are {Domain ID} {Role} per audits/ROSTER.md and audits/CHARTER.md.
+Checklist: audits/{01-08 file}.md
+Artifact: {commit / PR / paths}
+Declare concern IDs. Output only your role section. Handoff out-of-scope. No hallucinations.
+```
+
+### Full domain (three sequential passes)
+
+```
+Run domain 0X as Dev, then QA, then Support — separate answers, each re-declaring identity.
+```
+
+### Packs
+
+| Pack | Domains | When |
+|------|---------|------|
+| Ship gate | 01–05 | Before calling a build shippable |
+| Product strategy | 06–08 | Positioning, funnel, retention |
+| Full launch | 01–08 | Public launch review |
+
+Within a pack, still run **per specialist**, not one omniscient agent.
+
+---
+
+## Product truth
+
+- [`../PRODUCT.md`](../PRODUCT.md) — vision, MVP, metrics  
+- [`../CLAUDE.md`](../CLAUDE.md) — engineering invariants  
