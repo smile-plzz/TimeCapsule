@@ -13,9 +13,18 @@ export interface Memory {
   text?: string;
   location?: string;
   people?: string[];
+  /** Primary media URL (first item of mediaUrls). */
   mediaUrl?: string;
+  /** All resolved media URLs for this memory (photos/videos). */
+  mediaUrls?: string[];
   mood?: Mood;
   tags?: string[];
 }
 
 export type ViewMode = 'explorer' | 'heatmap' | 'search' | 'collections' | 'compare' | 'import';
+
+/** Open media viewer at a specific memory + index within its gallery. */
+export type MediaViewerState = {
+  memoryId: string;
+  index: number;
+} | null;
