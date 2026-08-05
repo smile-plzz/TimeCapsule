@@ -17,7 +17,7 @@ npm run dev
 
 Open http://localhost:5173
 
-Demo data is pre-loaded so you can experience the core “any day across years” flow immediately.
+Demo data is pre-loaded. On first visit a short onboarding explains how to get your real Facebook archive.
 
 ## What works today (MVP surfaces)
 
@@ -28,17 +28,24 @@ Demo data is pre-loaded so you can experience the core “any day across years�
 | **Search** (captions, locations, people, tags) | ✅ |
 | **Anniversary Collections** | ✅ |
 | **Compare Years** | ✅ |
+| **Guided onboarding** (how / why / where to export) | ✅ |
 | **Import UI** | ✅ UI + privacy messaging; real Facebook ZIP/JSON parser is the next milestone |
 | Photo viewer for real media | Not yet (needs archive media resolution) |
 | On-device AI summaries | Not yet |
 
 ## Golden-path demo (under 60 seconds)
 
-1. Open the app → you land on **Any-Day Explorer** for August 5.
+1. Open the app → short onboarding (or skip) → land on **Any-Day Explorer** for August 5.
 2. Scroll the vertical stack — memories from 2009 through 2025 appear for the same calendar day.
 3. Switch to **Heatmap**, click a dense square → jumps back to Explorer for that day.
 4. Try **Search** for “Japan” or “birthday”.
 5. Open **Collections** → “My Birthdays”.
+
+## How to get your real Facebook data
+
+See the in-app onboarding or the full guide: [`docs/facebook-export-guide.md`](docs/facebook-export-guide.md)
+
+**Critical:** request the archive in **JSON** format (not HTML).
 
 ## Product truth
 
@@ -54,10 +61,9 @@ Demo data is pre-loaded so you can experience the core “any day across years�
 
 ## Next engineering priorities (from PRODUCT.md + audits)
 
-1. Real Facebook ZIP + JSON parser (domain 03)
+1. Real Facebook ZIP + JSON parser (domain 03) — **critical path**
 2. Media path resolution + in-flow photo viewer
 3. Local AI summaries that degrade gracefully (domain 05)
-4. Stronger first-run → first multi-year “wow” path (domain 07)
 
 ## License
 
